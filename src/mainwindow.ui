@@ -23,119 +23,147 @@
       <property name="title">
        <string/>
       </property>
-      <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0" columnstretch="10,10">
-       <item row="1" column="1">
-        <widget class="QLabel" name="labelServer">
-         <property name="text">
-          <string>Program will wait for a an other instance running in Client mode to connect</string>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QRadioButton" name="radioButtonClientMode">
-         <property name="text">
-          <string>Run in Client mode</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="labelClient">
-         <property name="text">
-          <string>Program will connect to an other instance running in Server mode</string>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QRadioButton" name="radioButtonServerMode">
-         <property name="text">
-          <string>Run in Server mode</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <layout class="QFormLayout" name="formLayoutServer">
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::FieldsStayAtSizeHint</enum>
-         </property>
-         <property name="formAlignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-         </property>
-         <item row="0" column="0">
-          <widget class="QLabel" name="labelServerPort">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,10">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QRadioButton" name="radioButtonClientMode">
            <property name="text">
-            <string>Listen on port :</string>
+            <string>Run in Client mode</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QSpinBox" name="spinBoxServerPort">
-           <property name="maximum">
-            <number>65535</number>
+         <item>
+          <widget class="QLabel" name="labelClient">
+           <property name="text">
+            <string>Program will connect to an other instance running in Server mode</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayoutClient">
+           <property name="formAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelClientHost">
+             <property name="text">
+              <string>Host (IP address) :</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEditClientHost">
+             <property name="text">
+              <string>127.0.0.1</string>
+             </property>
+             <property name="placeholderText">
+              <string>ex: 90.0.188.37</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="labelClientPort">
+             <property name="text">
+              <string>Port :</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="spinBoxClientPort">
+             <property name="maximum">
+              <number>65535</number>
+             </property>
+             <property name="value">
+              <number>7777</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonClientConnect">
+           <property name="text">
+            <string>Connect</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
-       <item row="3" column="0">
-        <layout class="QFormLayout" name="formLayoutClient">
-         <property name="formAlignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-         </property>
-         <item row="0" column="0">
-          <widget class="QLabel" name="labelClientHost">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QRadioButton" name="radioButtonServerMode">
            <property name="text">
-            <string>Host (IP address) :</string>
+            <string>Run in Server mode</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="lineEditClientHost">
-           <property name="placeholderText">
-            <string>ex: 90.0.188.37</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="labelClientPort">
+         <item>
+          <widget class="QLabel" name="labelServer">
            <property name="text">
-            <string>Port :</string>
+            <string>Program will wait for a an other instance running in Client mode to connect</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QSpinBox" name="spinBoxClientPort">
-           <property name="maximum">
-            <number>65535</number>
+         <item>
+          <layout class="QFormLayout" name="formLayoutServer">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+           </property>
+           <property name="formAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelServerPort">
+             <property name="text">
+              <string>Listen on port :</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSpinBox" name="spinBoxServerPort">
+             <property name="maximum">
+              <number>65535</number>
+             </property>
+             <property name="value">
+              <number>7777</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Set port to 0 to choose automatically</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonServerStart">
+           <property name="text">
+            <string>Start</string>
            </property>
           </widget>
          </item>
         </layout>
-       </item>
-       <item row="4" column="0">
-        <widget class="QPushButton" name="pushButtonClientConnect">
-         <property name="text">
-          <string>Connect</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QPushButton" name="pushButtonServerStart">
-         <property name="text">
-          <string>Start</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
     </item>
     <item>
-     <widget class="QTextEdit" name="textEdit"/>
+     <widget class="QTextEdit" name="textEdit">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayoutMessageSend">

@@ -12,6 +12,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QAbstractSocket>
+#include <QTcpServer>
+#include <QTcpSocket>
 #include "ui_mainwindow.h"
 #include "ui_about.h"
 
@@ -23,19 +26,39 @@ public:
     MainWindow(QWidget *parent = 0);
 
 public slots:
-    // core
-    void clientServerModeChanged();
+    // core - low level
+    void newConnection();
+    void socketHostFound();
+    void socketConnected();
+    void socketDisconnected();
+    void socketReadyRead();
+    // core - errors
+    void serverAcceptError(QAbstractSocket::SocketError);
+    void socketError(QAbstractSocket::SocketError);
+    // core - high level
+    void clientConnect();
+    void serverStart();
+    void messageSend();
     // gui
+    void clientServerModeChanged();
     void about();
 
 private:
+    //core
+    void initCore();
+    // gui
     void initUI();
+    void setChatEnabled(bool);
 
 private:
     Ui::MainWindow ui;
     Ui::About ui_about;
 
     QDialog* mAboutDialog;
+    QStatusBar* mStatusBar;
+
+    QTcpServer* mTcpServer; // tcp server for server mode
+    QTcpSocket* mTcpSocket; // tcp socket for client/server mode
 };
 
 #endif // MAINWINDOW_H
