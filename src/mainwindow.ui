@@ -19,20 +19,13 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QGroupBox" name="groupBoxClientServer">
-      <property name="title">
-       <string/>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,10">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QRadioButton" name="radioButtonClientMode">
-           <property name="text">
-            <string>Run in Client mode</string>
-           </property>
-          </widget>
-         </item>
+     <layout class="QHBoxLayout" name="horizontalLayoutClientServerMode" stretch="10,10">
+      <item>
+       <widget class="QGroupBox" name="groupBoxClientMode">
+        <property name="title">
+         <string>Client mode</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
           <widget class="QLabel" name="labelClient">
            <property name="text">
@@ -92,16 +85,14 @@
           </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QRadioButton" name="radioButtonServerMode">
-           <property name="text">
-            <string>Run in Server mode</string>
-           </property>
-          </widget>
-         </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBoxServerMode">
+        <property name="title">
+         <string>Server mode</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
           <widget class="QLabel" name="labelServer">
            <property name="text">
@@ -140,7 +131,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="labelServerPortHint">
            <property name="text">
             <string>Set port to 0 to choose automatically</string>
            </property>
@@ -154,9 +145,9 @@
           </widget>
          </item>
         </layout>
-       </item>
-      </layout>
-     </widget>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QTextEdit" name="textEdit">

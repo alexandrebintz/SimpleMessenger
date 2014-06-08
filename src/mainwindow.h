@@ -15,6 +15,7 @@
 #include <QAbstractSocket>
 #include <QTcpServer>
 #include <QTcpSocket>
+
 #include "ui_mainwindow.h"
 #include "ui_about.h"
 
@@ -35,28 +36,35 @@ public slots:
     // errors
     void serverAcceptError(QAbstractSocket::SocketError);
     void socketError(QAbstractSocket::SocketError);
-    // chat logic
-    void appendLineInChatBox(QString line,bool italic,bool bold,QColor,bool doubleSpacing=true);
-    void appendLineInChatBox(QString line,bool italic,bool bold,bool doubleSpacing=true);
-    void appendChatMessageFromPeer(QString message);
-    void appendChatMessageFromLocal(QString message);
     // user actions
-    void clientConnect();
-    void serverStart();
+    void serverStartStop();
+    void clientConnectDisconnect();
     void messageSend();
     // user information
     void showError(QString);
     void showInfo(QString);
     // gui
-    void clientServerModeChanged();
     void about();
 
 private:
     //core
     void initCore();
+    void connectSocket();
+    // core actions actions
+    void clientConnect();
+    void clientDisconnect();
+    void serverStart();
+    void serverStop();
+    // chat logic
+    void appendLineInChatBox(QString line,bool italic,bool bold,QColor,bool doubleSpacing=true);
+    void appendLineInChatBox(QString line,bool italic,bool bold,bool doubleSpacing=true);
+    void appendChatMessageFromPeer(QString message);
+    void appendChatMessageFromLocal(QString message);
     // gui
     void initUI();
     void setChatEnabled(bool);
+    void setClientZoneEnabled(bool);
+    void setServerZoneEnabled(bool);
 
 private:
     Ui::MainWindow ui;
@@ -68,7 +76,7 @@ private:
     QTcpServer* mTcpServer; // tcp server for server mode
     QTcpSocket* mTcpSocket; // tcp socket for client/server mode
 
-    bool mLastChatBoxLineIsChatMessage = false;
+    bool mLastChatBoxLineIsChatMessage;
     QString mDateFormat;
 };
 

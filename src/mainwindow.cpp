@@ -101,6 +101,21 @@ void MainWindow::appendLineInChatBox(QString line, bool italic, bool bold, bool 
 }
 
 /**
+ * @brief User clicked the Client Connect/Disconnect button
+ */
+void MainWindow::clientConnectDisconnect()
+{
+    if(mTcpSocket && mTcpSocket->state()==QAbstractSocket::ConnectedState)
+    {
+        clientDisconnect();
+    }
+    else
+    {
+        clientConnect();
+    }
+}
+
+/**
  * @brief Attempts connection to host
  */
 void MainWindow::clientConnect()
@@ -109,6 +124,26 @@ void MainWindow::clientConnect()
 
     mTcpSocket = new QTcpSocket(this);
 
+    connectSocket();
+
+    mTcpSocket->connectToHost(ui.lineEditClientHost->text(),ui.spinBoxClientPort->value());
+}
+
+/**
+ * @brief Disconnects client from host
+ */
+void MainWindow::clientDisconnect()
+{
+    qDebug() << "disonnecting";
+
+    mTcpSocket->disconnectFromHost();
+}
+
+/**
+ * @brief Connect socket's signals
+ */
+void MainWindow::connectSocket()
+{
     connect(mTcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),
             this,SLOT(socketError(QAbstractSocket::SocketError)));
     connect(mTcpSocket,SIGNAL(hostFound()),
@@ -119,29 +154,6 @@ void MainWindow::clientConnect()
             this,SLOT(socketDisconnected()));
     connect(mTcpSocket,SIGNAL(readyRead()),
             this,SLOT(socketReadyRead()));
-
-    mTcpSocket->connectToHost(ui.lineEditClientHost->text(),ui.spinBoxClientPort->value());
-}
-
-/**
- * @brief Updates GUI to reflect client/server mode change
- */
-void MainWindow::clientServerModeChanged()
-{
-    bool clientMode = ui.radioButtonClientMode->isChecked();
-    bool serverMode = ui.radioButtonServerMode->isChecked();
-
-    ui.labelClient->setEnabled(clientMode);
-    ui.labelClientHost->setEnabled(clientMode);
-    ui.labelClientPort->setEnabled(clientMode);
-    ui.lineEditClientHost->setEnabled(clientMode);
-    ui.spinBoxClientPort->setEnabled(clientMode);
-    ui.pushButtonClientConnect->setEnabled(clientMode);
-
-    ui.labelServer->setEnabled(serverMode);
-    ui.labelServerPort->setEnabled(serverMode);
-    ui.spinBoxServerPort->setEnabled(serverMode);
-    ui.pushButtonServerStart->setEnabled(serverMode);
 }
 
 /**
@@ -153,6 +165,8 @@ void MainWindow::initCore()
     mTcpSocket = 0;
 
     mDateFormat = "dd.MM.yy HH:mm";
+
+    mLastChatBoxLineIsChatMessage = false;
 }
 
 /**
@@ -171,15 +185,10 @@ void MainWindow::initUI()
     connect(ui.actionAboutQt,SIGNAL(triggered()),
             qApp,SLOT(aboutQt()));
 
-    connect(ui.radioButtonClientMode,SIGNAL(toggled(bool)),
-            this,SLOT(clientServerModeChanged()));
-    connect(ui.radioButtonClientMode,SIGNAL(toggled(bool)),
-            this,SLOT(clientServerModeChanged()));
-
     connect(ui.pushButtonClientConnect,SIGNAL(clicked()),
-            this,SLOT(clientConnect()));
+            this,SLOT(clientConnectDisconnect()));
     connect(ui.pushButtonServerStart,SIGNAL(clicked()),
-            this,SLOT(serverStart()));
+            this,SLOT(serverStartStop()));
 
     connect(ui.pushButtonMessageSend,SIGNAL(clicked()),
             this,SLOT(messageSend()));
@@ -187,8 +196,6 @@ void MainWindow::initUI()
             this,SLOT(messageSend()));
 
     setChatEnabled(false);
-
-    ui.radioButtonClientMode->setChecked(false);
 }
 
 /**
@@ -229,8 +236,7 @@ void MainWindow::newConnection()
     if(mTcpSocket==0)
         return;
 
-    connect(mTcpSocket,SIGNAL(readyRead()),
-            this,SLOT(socketReadyRead()));
+    connectSocket();
 
     showInfo("Client connected from "+mTcpSocket->peerAddress().toString()+":"+QString::number(mTcpSocket->peerPort()));
 
@@ -271,13 +277,25 @@ void MainWindow::serverAcceptError(QAbstractSocket::SocketError error)
 }
 
 /**
+ * @brief User clicked the Server Start/Stop button
+ */
+void MainWindow::serverStartStop()
+{
+    if(mTcpServer && mTcpServer->isListening())
+    {
+        serverStop();
+    }
+    else
+    {
+        serverStart();
+    }
+}
+
+/**
  * @brief Starts the server
  */
 void MainWindow::serverStart()
 {
-    if(!ui.radioButtonServerMode->isChecked())
-        return;
-
     showInfo("Starting server...");
 
     int port = ui.spinBoxServerPort->value();
@@ -293,11 +311,28 @@ void MainWindow::serverStart()
     {
         ui.spinBoxServerPort->setValue(mTcpServer->serverPort());
         showInfo("Server is listening on port "+QString::number(mTcpServer->serverPort()));
+        setClientZoneEnabled(false);
+        ui.pushButtonServerStart->setText("Stop");
     }
     else
     {
         showError(mTcpServer->errorString());
     }
+}
+
+/**
+ * @brief Stops the server
+ */
+void MainWindow::serverStop()
+{
+    if(mTcpSocket)
+        mTcpSocket->disconnectFromHost();
+
+    mTcpServer->close();
+    showInfo("Server stopped");
+    setChatEnabled(false);
+    setClientZoneEnabled(true);
+    ui.pushButtonServerStart->setText("Start");
 }
 
 /**
@@ -308,6 +343,35 @@ void MainWindow::setChatEnabled(bool enabled)
 {
     ui.lineEditMessageSend->setEnabled(enabled);
     ui.pushButtonMessageSend->setEnabled(enabled);
+}
+
+/**
+ * @brief En/disables widget relative the client mode
+ * @param enabled
+ */
+void MainWindow::setClientZoneEnabled(bool enabled)
+{
+    ui.groupBoxClientMode->setEnabled(enabled);
+    ui.labelClient->setEnabled(enabled);
+    ui.labelClientHost->setEnabled(enabled);
+    ui.lineEditClientHost->setEnabled(enabled);
+    ui.labelClientPort->setEnabled(enabled);
+    ui.spinBoxClientPort->setEnabled(enabled);
+    ui.pushButtonClientConnect->setEnabled(enabled);
+}
+
+/**
+ * @brief En/disables widget relative the server mode
+ * @param enabled
+ */
+void MainWindow::setServerZoneEnabled(bool enabled)
+{
+    ui.groupBoxServerMode->setEnabled(enabled);
+    ui.labelServer->setEnabled(enabled);
+    ui.labelServerPort->setEnabled(enabled);
+    ui.labelServerPortHint->setEnabled(enabled);
+    ui.spinBoxServerPort->setEnabled(enabled);
+    ui.pushButtonServerStart->setEnabled(enabled);
 }
 
 /**
@@ -325,7 +389,8 @@ void MainWindow::socketError(QAbstractSocket::SocketError error)
 void MainWindow::socketConnected()
 {
     showInfo("Connected");
-
+    setServerZoneEnabled(false);
+    ui.pushButtonClientConnect->setText("Disconnect");
     setChatEnabled(true);
 }
 
@@ -335,7 +400,8 @@ void MainWindow::socketConnected()
 void MainWindow::socketDisconnected()
 {
     showInfo("Disconnected");
-
+    setServerZoneEnabled(true);
+    ui.pushButtonClientConnect->setText("Connect");
     setChatEnabled(false);
 }
 
