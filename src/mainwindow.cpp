@@ -11,6 +11,7 @@
 #include "mainwindow.h"
 #include <QMessageBox>
 #include <QDataStream>
+#include <QDateTime>
 
 /**
  * @brief Constructor
@@ -34,11 +35,77 @@ void MainWindow::about()
 }
 
 /**
+ * @brief append a new chat message from local user in the chat box
+ * @param sender name of the sender of the message
+ * @param message
+ */
+void MainWindow::appendChatMessageFromLocal(QString message)
+{
+    appendLineInChatBox("You say: "+message,false,true,true);
+
+    mLastChatBoxLineIsChatMessage = true;
+}
+
+/**
+ * @brief append a new chat message from the peer in the chat box
+ * @param sender name of the sender of the message
+ * @param message
+ */
+void MainWindow::appendChatMessageFromPeer(QString message)
+{
+    appendLineInChatBox("Peer says: "+message,false,false,true);
+
+    mLastChatBoxLineIsChatMessage = true;
+}
+
+/**
+ * @brief append a generic line in the chat box
+ * @param line
+ * @param italic
+ * @param color
+ * @param doubleSpacing
+ */
+void MainWindow::appendLineInChatBox(QString line, bool italic, bool bold,QColor color, bool doubleSpacing)
+{
+    QTextCursor c = ui.textEdit->textCursor();
+    c.movePosition(QTextCursor::End);
+    ui.textEdit->setTextCursor(c);
+
+    ui.textEdit->insertPlainText(doubleSpacing ? "\n" : "");
+    ui.textEdit->insertPlainText(QDateTime::currentDateTime().toString(mDateFormat));
+    ui.textEdit->insertPlainText(" ");
+
+    QColor defaultColor = ui.textEdit->textColor();
+    ui.textEdit->setTextColor(color);
+    ui.textEdit->setFontItalic(italic);
+    ui.textEdit->setFontWeight(bold ? QFont::Bold : QFont::Normal);
+
+    ui.textEdit->insertPlainText(line);
+
+    ui.textEdit->setFontWeight(QFont::Normal);
+    ui.textEdit->setFontItalic(false);
+    ui.textEdit->setTextColor(defaultColor);
+
+    ui.textEdit->insertPlainText("\n");
+}
+
+/**
+ * @brief append a generic line in the chat box with default color
+ * @param line
+ * @param italic
+ * @param doubleSpacing
+ */
+void MainWindow::appendLineInChatBox(QString line, bool italic, bool bold, bool doubleSpacing)
+{
+    appendLineInChatBox(line,italic,bold,ui.textEdit->textColor(),doubleSpacing);
+}
+
+/**
  * @brief Attempts connection to host
  */
 void MainWindow::clientConnect()
 {
-    mStatusBar->showMessage("Connecting to host...");
+    showInfo("Connecting to host...");
 
     mTcpSocket = new QTcpSocket(this);
 
@@ -84,6 +151,8 @@ void MainWindow::initCore()
 {
     mTcpServer = 0;
     mTcpSocket = 0;
+
+    mDateFormat = "dd.MM.yy HH:mm";
 }
 
 /**
@@ -134,7 +203,7 @@ void MainWindow::messageSend()
 
     QByteArray block;
     QDataStream out(&block,QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_2);
+    out.setVersion(QDataStream::Qt_5_2); // prevent errors due to version differences
 
     out << (quint16)0;  // reserve space for block size
     out << msg;
@@ -146,7 +215,7 @@ void MainWindow::messageSend()
     mTcpSocket->flush();
 
     ui.lineEditMessageSend->clear();
-    ui.textEdit->append(msg);
+    appendChatMessageFromLocal(msg);
 
     qDebug() << "BlockSize: " << block.size();
 }
@@ -163,9 +232,33 @@ void MainWindow::newConnection()
     connect(mTcpSocket,SIGNAL(readyRead()),
             this,SLOT(socketReadyRead()));
 
-    mStatusBar->showMessage("Client connected from "+mTcpSocket->peerAddress().toString()+":"+QString::number(mTcpSocket->peerPort()));
+    showInfo("Client connected from "+mTcpSocket->peerAddress().toString()+":"+QString::number(mTcpSocket->peerPort()));
 
     setChatEnabled(true);
+}
+
+/**
+ * @brief shows an error message to the user
+ * @param error
+ */
+void MainWindow::showError(QString error)
+{
+    appendLineInChatBox(error,true,false,Qt::red,mLastChatBoxLineIsChatMessage);
+
+    mStatusBar->showMessage("Error");
+    mLastChatBoxLineIsChatMessage = false;
+}
+
+/**
+ * @brief shows an info message to the user
+ * @param message
+ */
+void MainWindow::showInfo(QString message)
+{
+    appendLineInChatBox(message,true,false,mLastChatBoxLineIsChatMessage);
+
+    mStatusBar->showMessage(message);
+    mLastChatBoxLineIsChatMessage = false;
 }
 
 /**
@@ -174,8 +267,7 @@ void MainWindow::newConnection()
  */
 void MainWindow::serverAcceptError(QAbstractSocket::SocketError error)
 {
-    QMessageBox::warning(this,"Error",mTcpServer->errorString());
-    mStatusBar->clearMessage();
+    showError(mTcpServer->errorString());
 }
 
 /**
@@ -186,7 +278,7 @@ void MainWindow::serverStart()
     if(!ui.radioButtonServerMode->isChecked())
         return;
 
-    mStatusBar->showMessage("Starting server...");
+    showInfo("Starting server...");
 
     int port = ui.spinBoxServerPort->value();
 
@@ -200,12 +292,11 @@ void MainWindow::serverStart()
     if(mTcpServer->listen(QHostAddress::Any,port))
     {
         ui.spinBoxServerPort->setValue(mTcpServer->serverPort());
-        mStatusBar->showMessage("Server is listening on port "+QString::number(mTcpServer->serverPort()));
+        showInfo("Server is listening on port "+QString::number(mTcpServer->serverPort()));
     }
     else
     {
-        QMessageBox::warning(this,"Error",mTcpServer->errorString());
-        mStatusBar->clearMessage();
+        showError(mTcpServer->errorString());
     }
 }
 
@@ -225,8 +316,7 @@ void MainWindow::setChatEnabled(bool enabled)
  */
 void MainWindow::socketError(QAbstractSocket::SocketError error)
 {
-    QMessageBox::warning(this,"Error",mTcpSocket->errorString());
-    mStatusBar->clearMessage();
+    showError(mTcpSocket->errorString());
 }
 
 /**
@@ -234,7 +324,7 @@ void MainWindow::socketError(QAbstractSocket::SocketError error)
  */
 void MainWindow::socketConnected()
 {
-    mStatusBar->showMessage("Connected");
+    showInfo("Connected");
 
     setChatEnabled(true);
 }
@@ -244,7 +334,7 @@ void MainWindow::socketConnected()
  */
 void MainWindow::socketDisconnected()
 {
-    mStatusBar->showMessage("Disconnected");
+    showInfo("Disconnected");
 
     setChatEnabled(false);
 }
@@ -254,7 +344,7 @@ void MainWindow::socketDisconnected()
  */
 void MainWindow::socketHostFound()
 {
-    mStatusBar->showMessage("Host found");
+    showInfo("Host found");
 }
 
 /**
@@ -265,7 +355,7 @@ void MainWindow::socketReadyRead()
     qDebug() << "ReadyRead";
 
     QDataStream in(mTcpSocket);
-    in.setVersion(QDataStream::Qt_5_2);
+    in.setVersion(QDataStream::Qt_5_2); // prevent errors due to version differences
 
     static quint16 blockSize=0;
     QString msg;
@@ -275,7 +365,7 @@ void MainWindow::socketReadyRead()
 
     if(blockSize==0)
     {
-        if(mTcpSocket->bytesAvailable() < sizeof(quint16))
+        if(mTcpSocket->bytesAvailable() < (qint64)sizeof(quint16))
             return;
 
         in >> blockSize;
@@ -290,7 +380,7 @@ void MainWindow::socketReadyRead()
 
     blockSize = 0;
 
-    ui.textEdit->append(msg);
+    appendChatMessageFromPeer(msg);
 }
 
 

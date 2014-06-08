@@ -26,19 +26,27 @@ public:
     MainWindow(QWidget *parent = 0);
 
 public slots:
-    // core - low level
+    // socket management
     void newConnection();
     void socketHostFound();
     void socketConnected();
     void socketDisconnected();
     void socketReadyRead();
-    // core - errors
+    // errors
     void serverAcceptError(QAbstractSocket::SocketError);
     void socketError(QAbstractSocket::SocketError);
-    // core - high level
+    // chat logic
+    void appendLineInChatBox(QString line,bool italic,bool bold,QColor,bool doubleSpacing=true);
+    void appendLineInChatBox(QString line,bool italic,bool bold,bool doubleSpacing=true);
+    void appendChatMessageFromPeer(QString message);
+    void appendChatMessageFromLocal(QString message);
+    // user actions
     void clientConnect();
     void serverStart();
     void messageSend();
+    // user information
+    void showError(QString);
+    void showInfo(QString);
     // gui
     void clientServerModeChanged();
     void about();
@@ -59,6 +67,9 @@ private:
 
     QTcpServer* mTcpServer; // tcp server for server mode
     QTcpSocket* mTcpSocket; // tcp socket for client/server mode
+
+    bool mLastChatBoxLineIsChatMessage = false;
+    QString mDateFormat;
 };
 
 #endif // MAINWINDOW_H
