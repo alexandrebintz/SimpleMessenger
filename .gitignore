@@ -1,0 +1,12 @@
+
+#exclude custom IDE setting files
+
+*.pro.user
+
+# exclude generated doc files (but not the config file)
+
+doc/html
+
+# exclude Qt builds
+
+build-*
